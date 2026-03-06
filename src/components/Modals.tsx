@@ -32,8 +32,8 @@ export function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 <div className="modal-sub">Send funds to the wallet address below, then confirm the amount</div>
 
                 <div className="info-box">
-                    <strong>Our Wallet Address</strong><br />
-                    Send your crypto to the address below. Once confirmed, enter the amount and we'll update your balance.
+                    <strong>Our USDT (BEP20) Address</strong><br />
+                    Send exactly <strong style={{ color: 'var(--accent)' }}>USDT on the BEP20 (BSC) network</strong> to the address below. Any other token or network will be lost.
                 </div>
 
                 <div className="form-group">
@@ -50,13 +50,13 @@ export function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Your Sending Address</label>
-                        <input type="text" name="fromAddr" placeholder="Your wallet address (0x...)" required />
+                        <input type="text" name="fromAddr" placeholder="Your BEP20 wallet address (0x...)" required />
                     </div>
 
                     <div className="form-group">
-                        <label>Amount (USD)</label>
+                        <label>Amount (USDT)</label>
                         <div className="amount-input-wrap">
-                            <span className="currency-label">$</span>
+                            <span className="currency-label" style={{ fontSize: '0.8rem', paddingTop: '2px' }}>USDT</span>
                             <input type="number" name="amount" placeholder="0.00" min="1" step="0.01" required
                                 style={{ width: '100%', padding: '0.85rem 1rem', paddingLeft: '2.5rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', outline: 'none' }}
                             />
@@ -79,6 +79,7 @@ export function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
 export function WithdrawModal({ isOpen, onClose, balance }: { isOpen: boolean; onClose: () => void; balance: number }) {
     const { showToast } = useToast()
     const [loading, setLoading] = useState(false)
+    const [amount, setAmount] = useState<string>('')
 
     if (!isOpen) return null
 
@@ -105,22 +106,37 @@ export function WithdrawModal({ isOpen, onClose, balance }: { isOpen: boolean; o
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Your Receiving Address</label>
-                        <input type="text" name="toAddr" placeholder="Your wallet address (0x...)" required />
+                        <label>Your Receiving Address <span style={{ color: 'var(--accent)', fontSize: '0.75rem' }}>(USDT BEP20 Only)</span></label>
+                        <input type="text" name="toAddr" placeholder="Your BEP20 wallet address (0x...)" required />
                     </div>
 
                     <div className="form-group">
-                        <label>Amount (USD)</label>
+                        <label>Amount (USDT)</label>
                         <div className="amount-input-wrap">
-                            <span className="currency-label">$</span>
+                            <span className="currency-label" style={{ fontSize: '0.8rem', paddingTop: '2px' }}>USDT</span>
                             <input type="number" name="amount" placeholder="0.00" min="1" step="0.01" max={balance} required
+                                value={amount} onChange={(e) => setAmount(e.target.value)}
                                 style={{ width: '100%', padding: '0.85rem 1rem', paddingLeft: '2.5rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', outline: 'none' }}
                             />
                         </div>
                     </div>
 
                     <div className="info-box" style={{ marginTop: '1rem' }}>
-                        💡 Your current balance: <strong>${balance.toFixed(2)}</strong><br />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                            <span style={{ color: 'var(--muted)' }}>Current Balance:</span>
+                            <strong>${balance.toFixed(2)}</strong>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                            <span style={{ color: 'var(--muted)' }}>Withdrawal Fee (2%):</span>
+                            <strong style={{ color: 'var(--accent)' }}>-${(Number(amount) * 0.02).toFixed(2)}</strong>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '0.25rem', marginTop: '0.25rem' }}>
+                            <span><strong>You will receive:</strong></span>
+                            <strong style={{ color: 'var(--success, #22c55e)' }}>${(Number(amount) * 0.98).toFixed(2)}</strong>
+                        </div>
+                    </div>
+
+                    <div className="info-box" style={{ marginTop: '1rem', fontSize: '0.75rem' }}>
                         Withdrawals are processed after admin approval, typically within <strong>24–48 hours</strong>.
                     </div>
 

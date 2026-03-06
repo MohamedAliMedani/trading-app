@@ -65,7 +65,11 @@ export default async function AdminTransactionsPage() {
                                 pending.map(tx => (
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{tx.user.email}</span></td>
-                                        <td><span className="mono">${tx.amount.toFixed(2)}</span><br />{typeBadge(tx.type)}</td>
+                                        <td>
+                                            <span className="mono">${tx.amount.toFixed(2)}</span><br />
+                                            {typeBadge(tx.type)}
+                                            {tx.note && <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{tx.note}</div>}
+                                        </td>
                                         <td><span className="addr-short">{shortAddr(tx.toAddr)}</span></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleString()}</td>
                                         <td><AdminTransactionActions txId={tx.id} /></td>
@@ -104,7 +108,10 @@ export default async function AdminTransactionsPage() {
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span></td>
                                         <td>{typeBadge(tx.type)}</td>
-                                        <td className="mono">${tx.amount.toFixed(2)}</td>
+                                        <td className="mono">
+                                            ${tx.amount.toFixed(2)}
+                                            {tx.note && <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{tx.note}</div>}
+                                        </td>
                                         <td><span className="addr-short">{shortAddr(tx.toAddr)}</span></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleDateString()}</td>
                                         <td>{statusBadge(tx.status)}</td>

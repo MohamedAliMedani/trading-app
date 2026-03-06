@@ -50,16 +50,23 @@ export async function requestWithdrawal(formData: FormData) {
 
     const fromAddr = '0xA1B2C3D4E5F6a1b2c3d4e5f6A1B2C3D4E5F6a1b2'
 
-    await prisma.transaction.create({
-        data: {
-            type: 'withdraw',
-            amount,
-            fromAddr,
-            toAddr,
-            status: 'pending',
-            userId: session.id
-        }
-    })
+    await prisma.$transaction([
+        prisma.transaction.create({
+            data: {
+                type: 'withdraw',
+                amount,
+                fromAddr,
+                toAddr,
+                note: `Fee: $${(amount * 0.02).toFixed(2)} | Net: $${(amount * 0.98).toFixed(2)}`,
+                status: 'pending',
+                userId: session.id
+            }
+        }),
+        prisma.user.update({
+            where: { id: session.id },
+            data: { balance: { decrement: amount } }
+        })
+    ])
 
     revalidatePath('/dashboard')
     revalidatePath('/transactions')

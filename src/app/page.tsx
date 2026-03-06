@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { login, register } from './actions/auth'
 import { useToast } from '@/components/Toast'
 
@@ -71,12 +72,17 @@ export default function AuthPage() {
                 <label>Password</label>
                 <input type="password" name="password" placeholder="••••••••" required />
               </div>
+              {/* <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                <Link href="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none' }}>
+                  Forgot Password?
+                </Link>
+              </div> */}
               <button disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
                 {loading ? 'Signing in...' : 'Sign In →'}
               </button>
-              <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center' }}>
+              {/* <p style={{ marginTop: '1rem', fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center' }}>
                 Admin? Use <span style={{ color: 'var(--accent)', fontFamily: "'DM Mono', monospace" }}>admin@finvault.io</span> / <span style={{ color: 'var(--accent)', fontFamily: "'DM Mono', monospace" }}>admin123</span>
-              </p>
+              </p> */}
             </form>
           ) : (
             <form onSubmit={handleRegister} id="register-form">
@@ -90,7 +96,10 @@ export default function AuthPage() {
               </div>
               <div className="form-group">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Min 6 characters" required minLength={6} />
+                <input type="password" name="password" placeholder="Min 8 characters" required minLength={8} />
+                <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'var(--muted)', lineHeight: '1.4' }}>
+                  Password must contain at least 8 characters, an uppercase letter, a lowercase letter, a number, and a special character (!@#$%^&*).
+                </div>
               </div>
               <button disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
                 {loading ? 'Creating...' : 'Create Account →'}

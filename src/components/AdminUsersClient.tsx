@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UpdateBalanceModal } from '@/components/AdminComponents'
+import { UpdateBalanceModal, GlobalPercentageModal } from '@/components/AdminComponents'
 
 export default function UsersTableClientWrapper({
     users
@@ -9,9 +9,16 @@ export default function UsersTableClientWrapper({
     users: Array<{ id: string; name: string; email: string; balance: number; txCount: number }>
 }) {
     const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string; balance: number } | null>(null)
+    const [isGlobalModalOpen, setGlobalModalOpen] = useState(false)
 
     return (
         <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+                <button className="btn btn-primary btn-sm" style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface2)', color: 'var(--text)', border: '1px solid var(--border)', boxShadow: 'none' }} onClick={() => setGlobalModalOpen(true)}>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    Apply Global Profit / Loss
+                </button>
+            </div>
             <div className="card">
                 <div className="table-wrap">
                     <table>
@@ -50,6 +57,7 @@ export default function UsersTableClientWrapper({
                 </div>
             </div>
             <UpdateBalanceModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
+            <GlobalPercentageModal isOpen={isGlobalModalOpen} onClose={() => setGlobalModalOpen(false)} />
         </>
     )
 }

@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
+import { Prisma } from '@prisma/client'
 
 export async function processTransaction(txId: string, action: 'approve' | 'reject') {
     const session = await getSession()
@@ -12,28 +13,32 @@ export async function processTransaction(txId: string, action: 'approve' | 'reje
     if (!tx || tx.status !== 'pending') return { error: 'Transaction not found or already processed' }
 
     if (action === 'reject') {
-        await prisma.transaction.update({
-            where: { id: txId },
-            data: { status: 'rejected', processedAt: new Date() }
+        await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.transaction.update({
+                where: { id: txId },
+                data: { status: 'rejected', processedAt: new Date() }
+            })
+            // Refund the user if it was a withdrawal
+            if (tx.type === 'withdraw') {
+                await prismaTx.user.update({
+                    where: { id: tx.userId },
+                    data: { balance: { increment: tx.amount } }
+                })
+            }
         })
     } else {
         // Approve
-        await prisma.$transaction(async (prismaTx) => {
+        await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await prismaTx.transaction.update({
                 where: { id: txId },
                 data: { status: 'approved', processedAt: new Date() }
             })
 
+            // Only add balance for deposits. Withdrawals were already deducted when requested.
             if (tx.type === 'deposit') {
                 await prismaTx.user.update({
                     where: { id: tx.userId },
                     data: { balance: { increment: tx.amount } }
-                })
-            } else if (tx.type === 'withdraw') {
-                const newBalance = Math.max(0, tx.user.balance - tx.amount)
-                await prismaTx.user.update({
-                    where: { id: tx.userId },
-                    data: { balance: newBalance }
                 })
             }
         })
@@ -79,4 +84,55 @@ export async function updateUserBalance(formData: FormData) {
     revalidatePath('/admin')
     revalidatePath('/admin/users')
     return { success: true }
+}
+
+export async function applyGlobalPercentage(formData: FormData) {
+    const session = await getSession()
+    if (!session || session.role !== 'ADMIN') return { error: 'Unauthorized' }
+
+    const percentage = parseFloat(formData.get('percentage') as string)
+    const note = formData.get('note') as string
+
+    if (isNaN(percentage)) return { error: 'Invalid percentage' }
+
+    // Fetch all regular users
+    const users = await prisma.user.findMany({
+        where: { role: 'USER' }
+    })
+
+    const transactions = []
+
+    for (const user of users) {
+        // Calculate the profit/loss amount
+        const amountChange = user.balance * (percentage / 100)
+        const newBalance = Math.max(0, user.balance + amountChange)
+
+        if (amountChange === 0) continue
+
+        // Prepare the transaction data
+        transactions.push(prisma.user.update({
+            where: { id: user.id },
+            data: { balance: newBalance }
+        }))
+        transactions.push(prisma.transaction.create({
+            data: {
+                type: 'admin_update',
+                amount: Math.abs(amountChange),
+                status: 'approved',
+                fromAddr: 'Admin',
+                toAddr: '—',
+                note: note || `Global ${percentage > 0 ? 'Profit' : 'Loss'} (${percentage}%) applied`,
+                processedAt: new Date(),
+                userId: user.id
+            }
+        }))
+    }
+
+    if (transactions.length > 0) {
+        await prisma.$transaction(transactions)
+    }
+
+    revalidatePath('/admin')
+    revalidatePath('/admin/users')
+    return { success: true, count: users.length }
 }

@@ -25,8 +25,26 @@ export default async function DashboardPage() {
     if (!user) redirect('/')
 
     const txs = user.transactions
-    const deps = txs.filter(t => t.type === 'deposit' && t.status === 'approved').reduce((s, t) => s + t.amount, 0)
-    const wits = txs.filter(t => t.type === 'withdraw' && t.status === 'approved').reduce((s, t) => s + t.amount, 0)
+    const deps = txs.filter((t: any) => t.type === 'deposit' && t.status === 'approved').reduce((s: number, t: any) => s + t.amount, 0)
+    const wits = txs.filter((t: any) => t.type === 'withdraw' && t.status === 'approved').reduce((s: number, t: any) => s + t.amount, 0)
+
+    // Calculate Total Profit/Loss from admin updates
+    const adminUpdates = txs.filter(t => t.type === 'admin_update' && t.status === 'approved')
+    let totalProfit = 0
+    let totalLoss = 0
+
+    adminUpdates.forEach(t => {
+        // Simple heuristic: if the note says 'Loss' or the amount was implicitly a deduction (we'll look at the note for now if we don't have a sign)
+        const isLoss = t.note?.toLowerCase().includes('loss') || t.note?.toLowerCase().includes('deduction')
+        if (isLoss) {
+            totalLoss += t.amount
+        } else {
+            totalProfit += t.amount // Assume profit or generic addition
+        }
+    })
+
+    const netProfit = totalProfit - totalLoss
+
     const pend = txs.filter(t => t.status === 'pending').length
 
     return (
@@ -74,12 +92,21 @@ export default async function DashboardPage() {
                                         </svg>
                                     </div>
                                     <div className="history-info">
-                                        <div className="history-type">{tx.type === 'admin_update' ? 'Balance Update' : tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}</div>
-                                        <div className="history-date">{new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                                        <div className="history-type">
+                                            {tx.type === 'admin_update'
+                                                ? (tx.note?.toLowerCase().includes('loss') ? 'Trading Loss' : 'Trading Profit')
+                                                : tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
+                                        </div>
+                                        <div className="history-date">
+                                            {new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            {tx.type === 'admin_update' && tx.note && (
+                                                <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--muted)', marginTop: '2px' }}>{tx.note}</span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div>
-                                        <div className={`history-amt ${tx.type !== 'withdraw' ? 'pos' : 'neg'}`}>
-                                            {tx.type === 'withdraw' ? '-' : '+'}${tx.amount.toFixed(2)}
+                                        <div className={`history-amt ${tx.type === 'withdraw' || (tx.type === 'admin_update' && tx.note?.toLowerCase().includes('loss')) ? 'neg' : 'pos'}`}>
+                                            {tx.type === 'withdraw' || (tx.type === 'admin_update' && tx.note?.toLowerCase().includes('loss')) ? '-' : '+'}${tx.amount.toFixed(2)}
                                         </div>
                                         <div className="history-status" style={{ textAlign: 'right' }}>
                                             {statusBadge(tx.status)}
@@ -106,6 +133,12 @@ export default async function DashboardPage() {
                         <div className="stat-card purple" style={{ padding: '1rem' }}>
                             <div className="stat-label">Total Withdrawn</div>
                             <div className="stat-value purple" style={{ fontSize: '1.3rem' }}>${wits.toFixed(2)}</div>
+                        </div>
+                        <div className={`stat-card ${netProfit >= 0 ? 'cyan' : 'warn'}`} style={{ padding: '1rem', border: `1px solid ${netProfit >= 0 ? 'rgba(45,212,191,0.2)' : 'rgba(239,68,68,0.2)'}` }}>
+                            <div className="stat-label">Net Profit / Loss</div>
+                            <div className={`stat-value ${netProfit >= 0 ? 'cyan' : 'warn'}`} style={{ fontSize: '1.3rem' }}>
+                                {netProfit >= 0 ? '+' : '-'}${Math.abs(netProfit).toFixed(2)}
+                            </div>
                         </div>
                         <div className="stat-card warn" style={{ padding: '1rem' }}>
                             <div className="stat-label">Pending Requests</div>
