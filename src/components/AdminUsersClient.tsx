@@ -1,0 +1,55 @@
+'use client'
+
+import { useState } from 'react'
+import { UpdateBalanceModal } from '@/components/AdminComponents'
+
+export default function UsersTableClientWrapper({
+    users
+}: {
+    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number }>
+}) {
+    const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string; balance: number } | null>(null)
+
+    return (
+        <>
+            <div className="card">
+                <div className="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Balance</th>
+                                <th>Transactions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.length === 0 ? (
+                                <tr><td colSpan={5}><div className="empty-state" style={{ padding: '2rem' }}><p>No users registered yet.</p></div></td></tr>
+                            ) : (
+                                users.map(u => (
+                                    <tr key={u.id}>
+                                        <td><span style={{ fontWeight: 700 }}>{u.name}</span></td>
+                                        <td className="mono" style={{ fontSize: '0.78rem' }}>{u.email}</td>
+                                        <td><span className="mono" style={{ color: 'var(--accent3)', fontWeight: 600 }}>${u.balance.toFixed(2)}</span></td>
+                                        <td style={{ color: 'var(--muted)' }}>{u.txCount} txs</td>
+                                        <td>
+                                            <button
+                                                className="btn btn-secondary btn-sm"
+                                                onClick={() => setSelectedUser(u)}
+                                            >
+                                                Edit Balance
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <UpdateBalanceModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
+        </>
+    )
+}
