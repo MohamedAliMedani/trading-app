@@ -1,12 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/Toast';
+
+export const viewport: Viewport = {
+  themeColor: "#080b12",
+};
 
 export const metadata: Metadata = {
   title: "FinVault — Your Digital Wallet",
   description: "Secure, real-time digital wallet platform",
   manifest: "/manifest.json",
-  themeColor: "#080b12",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
