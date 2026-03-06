@@ -32,6 +32,10 @@ export default function Sidebar({ user }: { user: { name: string; email: string;
                             <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></svg>
                             Transactions
                         </Link>
+                        <Link href="/trading" className={`nav-item ${pathname === '/trading' ? 'active' : ''}`} onClick={() => setIsOpen(false)}>
+                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                            Trading
+                        </Link>
                     </div>
                 ) : (
                     <div>

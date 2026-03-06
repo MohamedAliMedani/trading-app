@@ -15,7 +15,7 @@ export async function requestDeposit(formData: FormData) {
     if (!fromAddr) return { error: 'Invalid sending address' }
 
     // Platform wallet is hardcoded
-    const toAddr = '0xA1B2C3D4E5F6a1b2c3d4e5f6A1B2C3D4E5F6a1b2'
+    const toAddr = '0x287F999Ccd81589D1680ade934f9E6A4f881b0a2'
 
     await prisma.transaction.create({
         data: {
@@ -48,7 +48,7 @@ export async function requestWithdrawal(formData: FormData) {
         return { error: 'Insufficient balance' }
     }
 
-    const fromAddr = '0xA1B2C3D4E5F6a1b2c3d4e5f6A1B2C3D4E5F6a1b2'
+    const fromAddr = ''
 
     await prisma.$transaction([
         prisma.transaction.create({
