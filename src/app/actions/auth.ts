@@ -45,6 +45,7 @@ export async function register(formData: FormData) {
     const name = formData.get('name') as string
     const email = formData.get('email') as string
     const password = formData.get('password') as string
+    const referrerId = formData.get('referrerId') as string
 
     if (!name || !email || !password) return { error: 'Please fill all fields' }
 
@@ -54,9 +55,22 @@ export async function register(formData: FormData) {
     const existingUser = await prisma.user.findUnique({ where: { email } })
     if (existingUser) return { error: 'Email already registered' }
 
+    // Validate Referral ID if provided
+    let refId: string | undefined = undefined
+    if (referrerId && referrerId.trim() !== '') {
+        const referrer = await prisma.user.findUnique({ where: { id: referrerId } })
+        if (!referrer) return { error: 'Invalid Referral ID. Please check the ID or leave it empty.' }
+        refId = referrer.id
+    }
+
     const hash = await hashPassword(password)
     const user = await prisma.user.create({
-        data: { name, email, passwordHash: hash }
+        data: {
+            name,
+            email,
+            passwordHash: hash,
+            referredBy: refId ? { connect: { id: refId } } : undefined
+        }
     })
 
     await createSession({ id: user.id, email: user.email, role: user.role })

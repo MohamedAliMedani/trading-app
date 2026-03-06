@@ -101,6 +101,13 @@ export default function AuthPage() {
                   Password must contain at least 8 characters, an uppercase letter, a lowercase letter, a number, and a special character (!@#$%^&*).
                 </div>
               </div>
+              <div className="form-group">
+                <label>Referral ID (Optional)</label>
+                <input type="text" name="referrerId" placeholder="e.g. clx123..." />
+                <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--muted)' }}>
+                  Enter the ID of the person who referred you.
+                </div>
+              </div>
               <button disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
                 {loading ? 'Creating...' : 'Create Account →'}
               </button>

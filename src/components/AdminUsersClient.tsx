@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { UpdateBalanceModal, GlobalPercentageModal } from '@/components/AdminComponents'
+import { UpdateBalanceModal, GlobalPercentageModal, CopyAddress } from '@/components/AdminComponents'
 
 export default function UsersTableClientWrapper({
     users
 }: {
-    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number; lastAddr: string }>
+    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number; lastAddr: string; referrer: string }>
 }) {
     const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string; balance: number } | null>(null)
     const [isGlobalModalOpen, setGlobalModalOpen] = useState(false)
@@ -25,7 +25,8 @@ export default function UsersTableClientWrapper({
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Email</th>
+                                <th>Account ID</th>
+                                <th>Referrer</th>
                                 <th>Balance</th>
                                 <th>Wallet Address</th>
                                 <th>Txs</th>
@@ -38,8 +39,9 @@ export default function UsersTableClientWrapper({
                             ) : (
                                 users.map(u => (
                                     <tr key={u.id}>
-                                        <td><span style={{ fontWeight: 700 }}>{u.name}</span></td>
-                                        <td className="mono" style={{ fontSize: '0.78rem' }}>{u.email}</td>
+                                        <td><span style={{ fontWeight: 700 }}>{u.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{u.email}</span></td>
+                                        <td><CopyAddress address={u.id} /></td>
+                                        <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{u.referrer}</td>
                                         <td><span className="mono" style={{ color: 'var(--accent3)', fontWeight: 600 }}>${u.balance.toFixed(2)}</span></td>
                                         <td><span className="mono" style={{ fontSize: '0.7rem', color: 'var(--muted)', wordBreak: 'break-all' }}>{u.lastAddr}</span></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{u.txCount}</td>

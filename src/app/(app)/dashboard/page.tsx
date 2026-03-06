@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { DashboardActions } from '@/components/DashboardActions'
+import { DashboardActions, CopyButton } from '@/components/DashboardActions'
 
 function statusBadge(status: string) {
     if (status === 'pending') return <span className="badge badge-pending">Pending</span>
@@ -145,6 +145,23 @@ export default async function DashboardPage() {
                         <div className="stat-card warn" style={{ padding: '1rem' }}>
                             <div className="stat-label">Pending Requests</div>
                             <div className="stat-value warn" style={{ fontSize: '1.3rem' }}>{pend}</div>
+                        </div>
+
+                        <div className="card" style={{ marginTop: '0.5rem', background: 'var(--bg)', border: '1px dashed var(--border)' }}>
+                            <div className="card-title" style={{ fontSize: '0.85rem' }}>Account Profile</div>
+                            <div style={{ marginTop: '1rem' }}>
+                                <div className="stat-label" style={{ fontSize: '0.65rem' }}>Your Referral ID</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                    <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent)' }}>{user.id}</span>
+                                    <CopyButton text={user.id} />
+                                </div>
+                                {user.referredById && (
+                                    <div style={{ marginTop: '0.75rem' }}>
+                                        <div className="stat-label" style={{ fontSize: '0.65rem' }}>Referred By</div>
+                                        <div className="mono" style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.1rem' }}>{user.referredById}</div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

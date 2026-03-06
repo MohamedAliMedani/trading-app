@@ -17,6 +17,9 @@ model User {
   resetToken       String?       @unique
   resetTokenExpiry DateTime?
   transactions     Transaction[]
+  referredById      String?
+  referredBy        User?         @relation("UserReferrals", fields: [referredById], references: [id])
+  referrals         User[]        @relation("UserReferrals")
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 }

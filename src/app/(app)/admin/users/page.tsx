@@ -18,6 +18,9 @@ export default async function AdminUsersPage() {
             },
             _count: {
                 select: { transactions: true }
+            },
+            referredBy: {
+                select: { name: true, email: true }
             }
         },
         orderBy: { createdAt: 'desc' }
@@ -31,7 +34,8 @@ export default async function AdminUsersPage() {
         txCount: u._count.transactions,
         lastAddr: u.transactions[0]
             ? (u.transactions[0].type === 'deposit' ? u.transactions[0].fromAddr : u.transactions[0].toAddr)
-            : '—'
+            : '—',
+        referrer: u.referredBy ? `${u.referredBy.name} (${u.referredBy.email})` : '—'
     }))
 
     return (
