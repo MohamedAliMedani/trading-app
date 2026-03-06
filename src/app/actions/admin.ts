@@ -62,10 +62,13 @@ export async function updateUserBalance(formData: FormData) {
     const targetUser = await prisma.user.findUnique({ where: { id: userId } })
     if (!targetUser) return { error: 'User not found' }
 
+    const updateType = formData.get('type') as string || 'Manual Update'
+    const newBalance = targetUser.balance + amount
+
     await prisma.$transaction([
         prisma.user.update({
             where: { id: userId },
-            data: { balance: amount }
+            data: { balance: newBalance }
         }),
         prisma.transaction.create({
             data: {
@@ -74,7 +77,7 @@ export async function updateUserBalance(formData: FormData) {
                 status: 'approved',
                 fromAddr: 'Admin',
                 toAddr: '—',
-                note: note || 'Manual balance update',
+                note: `${updateType}${note ? `: ${note}` : ''}`,
                 processedAt: new Date(),
                 userId: userId
             }

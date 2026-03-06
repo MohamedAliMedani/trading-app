@@ -9,6 +9,13 @@ export default async function AdminUsersPage() {
 
     const usersData = await prisma.user.findMany({
         include: {
+            transactions: {
+                where: {
+                    type: { in: ['deposit', 'withdraw'] }
+                },
+                orderBy: { date: 'desc' },
+                take: 1
+            },
             _count: {
                 select: { transactions: true }
             }
@@ -21,7 +28,10 @@ export default async function AdminUsersPage() {
         name: u.name,
         email: u.email,
         balance: u.balance,
-        txCount: u._count.transactions
+        txCount: u._count.transactions,
+        lastAddr: u.transactions[0]
+            ? (u.transactions[0].type === 'deposit' ? u.transactions[0].fromAddr : u.transactions[0].toAddr)
+            : '—'
     }))
 
     return (

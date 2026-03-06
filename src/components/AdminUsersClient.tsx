@@ -6,7 +6,7 @@ import { UpdateBalanceModal, GlobalPercentageModal } from '@/components/AdminCom
 export default function UsersTableClientWrapper({
     users
 }: {
-    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number }>
+    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number; lastAddr: string }>
 }) {
     const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string; balance: number } | null>(null)
     const [isGlobalModalOpen, setGlobalModalOpen] = useState(false)
@@ -27,7 +27,8 @@ export default function UsersTableClientWrapper({
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Balance</th>
-                                <th>Transactions</th>
+                                <th>Wallet Address</th>
+                                <th>Txs</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -40,7 +41,8 @@ export default function UsersTableClientWrapper({
                                         <td><span style={{ fontWeight: 700 }}>{u.name}</span></td>
                                         <td className="mono" style={{ fontSize: '0.78rem' }}>{u.email}</td>
                                         <td><span className="mono" style={{ color: 'var(--accent3)', fontWeight: 600 }}>${u.balance.toFixed(2)}</span></td>
-                                        <td style={{ color: 'var(--muted)' }}>{u.txCount} txs</td>
+                                        <td><span className="mono" style={{ fontSize: '0.7rem', color: 'var(--muted)', wordBreak: 'break-all' }}>{u.lastAddr}</span></td>
+                                        <td style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{u.txCount}</td>
                                         <td>
                                             <button
                                                 className="btn btn-secondary btn-sm"

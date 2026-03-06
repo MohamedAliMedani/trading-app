@@ -1,8 +1,45 @@
 'use client'
 
 import { useState } from 'react'
-import { updateUserBalance, processTransaction, applyGlobalPercentage } from '@/app/actions/admin'
+import { processTransaction, applyGlobalPercentage, updateUserBalance } from '@/app/actions/admin'
 import { useToast } from '@/components/Toast'
+
+export function CopyAddress({ address }: { address: string }) {
+    const { showToast } = useToast()
+
+    if (!address || address === '—' || address === 'Admin') return <span>{address || '—'}</span>
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(address)
+        showToast('Address copied!', 'info')
+    }
+
+    return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span className="mono" style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}>{address}</span>
+            <button
+                onClick={handleCopy}
+                style={{
+                    padding: '4px',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    color: 'var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                }}
+                title="Copy full address"
+            >
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+            </button>
+        </div>
+    )
+}
 
 export function AdminTransactionActions({ txId }: { txId: string }) {
     const { showToast } = useToast()
@@ -62,12 +99,24 @@ export function UpdateBalanceModal({
                         <input type="text" value={user.name} readOnly style={{ opacity: 0.6 }} />
                     </div>
                     <div className="form-group">
-                        <label>New Balance (USD)</label>
+                        <label>Update Type</label>
+                        <select name="type" required style={{ width: '100%', padding: '0.85rem 1rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }}>
+                            <option value="Profit">📈 Profit</option>
+                            <option value="Bonus">🎁 Bonus</option>
+                            <option value="Reward">🏆 Reward</option>
+                            <option value="Correction">🔧 Correction / Manual</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label>Amount to Add (USD)</label>
                         <div className="amount-input-wrap">
                             <span className="currency-label">$</span>
-                            <input type="number" name="amount" defaultValue={user.balance} min="0" step="0.01" required
+                            <input type="number" name="amount" placeholder="e.g. 50.00" step="0.01" required
                                 style={{ width: '100%', padding: '0.85rem 1rem', paddingLeft: '2.5rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', fontFamily: "'DM Mono', monospace", fontSize: '0.9rem', outline: 'none' }}
                             />
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+                            Current balance: <strong>${user.balance.toFixed(2)}</strong>
                         </div>
                     </div>
                     <div className="form-group">

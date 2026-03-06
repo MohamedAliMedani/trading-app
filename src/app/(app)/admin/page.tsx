@@ -1,11 +1,18 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { CopyAddress } from '@/components/AdminComponents'
 
-function typeBadge(type: string) {
+function typeBadge(type: string, note?: string | null) {
     if (type === 'deposit') return <span className="badge badge-deposit">Deposit</span>
     if (type === 'withdraw') return <span className="badge badge-withdraw">Withdraw</span>
-    if (type === 'admin_update') return <span className="badge" style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent3)' }}>Balance Update</span>
+    if (type === 'admin_update') {
+        const n = note?.toLowerCase() || ''
+        if (n.includes('bonus')) return <span className="badge" style={{ background: 'rgba(124,58,237,0.1)', color: 'var(--accent2)' }}>Bonus</span>
+        if (n.includes('reward')) return <span className="badge" style={{ background: 'rgba(0,229,255,0.1)', color: 'var(--accent)' }}>Reward</span>
+        if (n.includes('loss')) return <span className="badge" style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--danger)' }}>Trading Loss</span>
+        return <span className="badge" style={{ background: 'rgba(16,185,129,0.1)', color: 'var(--accent3)' }}>Trading Profit</span>
+    }
     return <span className="badge">{type}</span>
 }
 
@@ -97,9 +104,9 @@ export default async function AdminDashboardPage() {
                                 txs.map(tx => (
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{tx.user.email}</span></td>
-                                        <td>{typeBadge(tx.type)}</td>
+                                        <td>{typeBadge(tx.type, tx.note)}</td>
                                         <td className="mono">${tx.amount.toFixed(2)}</td>
-                                        <td><span className="addr-short">{shortAddr(tx.toAddr)}</span></td>
+                                        <td><CopyAddress address={tx.toAddr} /></td>
                                         <td>{statusBadge(tx.status)}</td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleDateString()}</td>
                                     </tr>

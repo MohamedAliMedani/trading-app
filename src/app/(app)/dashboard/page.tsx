@@ -94,7 +94,9 @@ export default async function DashboardPage() {
                                     <div className="history-info">
                                         <div className="history-type">
                                             {tx.type === 'admin_update'
-                                                ? (tx.note?.toLowerCase().includes('loss') ? 'Trading Loss' : 'Trading Profit')
+                                                ? (tx.note?.toLowerCase().includes('bonus') ? 'Bonus' :
+                                                    tx.note?.toLowerCase().includes('reward') ? 'Reward' :
+                                                        tx.note?.toLowerCase().includes('loss') ? 'Trading Loss' : 'Trading Profit')
                                                 : tx.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
                                         </div>
                                         <div className="history-date">
