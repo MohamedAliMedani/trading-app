@@ -23,7 +23,7 @@ export function CopyButton({ text }: { text: string }) {
     )
 }
 
-export function DashboardActions({ balance }: { balance: number }) {
+export function DashboardActions({ balance, hasDoubled }: { balance: number; hasDoubled: boolean }) {
     const [isDepositOpen, setDepositOpen] = useState(false)
     const [isWithdrawOpen, setWithdrawOpen] = useState(false)
 
@@ -40,7 +40,7 @@ export function DashboardActions({ balance }: { balance: number }) {
                 </button>
             </div>
             <DepositModal isOpen={isDepositOpen} onClose={() => setDepositOpen(false)} />
-            <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setWithdrawOpen(false)} balance={balance} />
+            <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setWithdrawOpen(false)} balance={balance} hasDoubled={hasDoubled} />
         </>
     )
 }

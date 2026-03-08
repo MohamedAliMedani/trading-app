@@ -33,15 +33,21 @@ export default async function AdminDashboardPage() {
     const session = await getSession()
     if (!session || session.role !== 'ADMIN') redirect('/')
 
-    const [users, txs] = await Promise.all([
+    const [users, recentTxs, totalDepData, pendCount] = await Promise.all([
         prisma.user.findMany(),
-        prisma.transaction.findMany({ include: { user: true }, orderBy: { date: 'desc' }, take: 8 })
+        prisma.transaction.findMany({ include: { user: true }, orderBy: { date: 'desc' }, take: 8 }),
+        prisma.transaction.aggregate({
+            where: { type: 'deposit', status: 'approved' },
+            _sum: { amount: true }
+        }),
+        prisma.transaction.count({
+            where: { status: 'pending' }
+        })
     ])
 
     const uCount = users.length
     const totalBal = users.reduce((acc, u) => acc + u.balance, 0)
-    const pendCount = txs.filter(t => t.status === 'pending').length
-    const totalDep = txs.filter(t => t.type === 'deposit' && t.status === 'approved').reduce((acc, t) => acc + t.amount, 0)
+    const totalDep = totalDepData._sum.amount || 0
 
     return (
         <div className="page active" style={{ display: 'block' }}>
@@ -98,10 +104,10 @@ export default async function AdminDashboardPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {txs.length === 0 ? (
+                            {recentTxs.length === 0 ? (
                                 <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>No transactions</td></tr>
                             ) : (
-                                txs.map(tx => (
+                                recentTxs.map(tx => (
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{tx.user.email}</span></td>
                                         <td>{typeBadge(tx.type, tx.note)}</td>

@@ -36,6 +36,10 @@ export default function Sidebar({ user }: { user: { name: string; email: string;
                             <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                             Trading
                         </Link>
+                        <Link href="/profile" className={`nav-item ${pathname === '/profile' ? 'active' : ''}`} onClick={() => setIsOpen(false)}>
+                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            Profile
+                        </Link>
                     </div>
                 ) : (
                     <div>
@@ -51,6 +55,10 @@ export default function Sidebar({ user }: { user: { name: string; email: string;
                         <Link href="/admin/users" className={`nav-item ${pathname === '/admin/users' ? 'active' : ''}`} onClick={() => setIsOpen(false)}>
                             <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
                             Users
+                        </Link>
+                        <Link href="/admin/referrals" className={`nav-item ${pathname === '/admin/referrals' ? 'active' : ''}`} onClick={() => setIsOpen(false)}>
+                            <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Referral Program
                         </Link>
                     </div>
                 )}

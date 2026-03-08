@@ -20,6 +20,7 @@ model User {
   referredById      String?
   referredBy        User?         @relation("UserReferrals", fields: [referredById], references: [id])
   referrals         User[]        @relation("UserReferrals")
+  bonusTradesRemaining Int         @default(0)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
 }

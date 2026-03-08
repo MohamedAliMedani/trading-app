@@ -43,10 +43,33 @@ export async function requestWithdrawal(formData: FormData) {
     if (isNaN(amount) || amount <= 0) return { error: 'Invalid amount' }
     if (!toAddr) return { error: 'Invalid receiving address' }
 
-    const user = await prisma.user.findUnique({ where: { id: session.id } })
+    const user = await prisma.user.findUnique({
+        where: { id: session.id },
+        include: {
+            transactions: {
+                where: { status: 'approved' }
+            }
+        }
+    })
+
     if (!user || user.balance < amount) {
         return { error: 'Insufficient balance' }
     }
+
+    const totalDeposited = user.transactions.filter((t: any) => t.type === 'deposit').reduce((sum: number, tx: any) => sum + tx.amount, 0)
+    const totalWithdrawn = user.transactions.filter((t: any) => t.type === 'withdraw').reduce((sum: number, tx: any) => sum + tx.amount, 0)
+
+    // Lifestyle Earnings = (Current Balance + Total Withdrawn) - Total Deposited
+    // Basically: How much profit have you ever made?
+    const lifetimeEarnings = (user.balance + totalWithdrawn) - totalDeposited
+
+    // Milestone Check: If you have earned at least as much as you've put in, you've doubled.
+    // If you deposit more, the threshold goes up.
+    const hasDoubled = totalDeposited > 0 && lifetimeEarnings >= totalDeposited
+
+    const feePercent = hasDoubled ? 0.02 : 0.25
+    const feeAmount = amount * feePercent
+    const netAmount = amount - feeAmount
 
     const fromAddr = ''
 
@@ -57,7 +80,7 @@ export async function requestWithdrawal(formData: FormData) {
                 amount,
                 fromAddr,
                 toAddr,
-                note: `Fee: $${(amount * 0.02).toFixed(2)} | Net: $${(amount * 0.98).toFixed(2)}`,
+                note: `Fee: $${feeAmount.toFixed(2)} (${(feePercent * 100).toFixed(0)}%) | Net: $${netAmount.toFixed(2)}`,
                 status: 'pending',
                 userId: session.id
             }

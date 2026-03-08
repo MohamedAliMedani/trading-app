@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { AdminTransactionActions, CopyAddress } from '@/components/AdminComponents'
+import Pagination from '@/components/Pagination'
 
 function typeBadge(type: string, note?: string | null) {
     if (type === 'deposit') return <span className="badge badge-deposit">Deposit</span>
@@ -29,12 +30,41 @@ function shortAddr(addr: string) {
     return addr.slice(0, 6) + '…' + addr.slice(-4)
 }
 
-export default async function AdminTransactionsPage() {
+function getReceiveAmount(amount: number, type: string, note?: string | null) {
+    if (type === 'withdraw' && note && note.includes('Net: $')) {
+        const parts = note.split('Net: $')
+        if (parts.length > 1) {
+            return parseFloat(parts[1])
+        }
+    }
+    return amount
+}
+
+export default async function AdminTransactionsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+    const params = await searchParams
+    const currentPage = Number(params.page) || 1
+    const limit = 10
+    const skip = (currentPage - 1) * limit
+
     const session = await getSession()
     if (!session || session.role !== 'ADMIN') redirect('/')
 
-    const txs = await prisma.transaction.findMany({ include: { user: true }, orderBy: { date: 'desc' } })
-    const pending = txs.filter(t => t.status === 'pending')
+    const [allTxs, totalItems, pending] = await Promise.all([
+        prisma.transaction.findMany({
+            include: { user: true },
+            orderBy: { date: 'desc' },
+            skip,
+            take: limit
+        }),
+        prisma.transaction.count(),
+        prisma.transaction.findMany({
+            where: { status: 'pending' },
+            include: { user: true },
+            orderBy: { date: 'desc' }
+        })
+    ])
+
+    const totalPages = Math.ceil(totalItems / limit)
 
     return (
         <div className="page active" style={{ display: 'block' }}>
@@ -59,6 +89,7 @@ export default async function AdminTransactionsPage() {
                             <tr>
                                 <th>User</th>
                                 <th>Amount</th>
+                                <th>Receive Amount</th>
                                 <th>To Address</th>
                                 <th>Requested</th>
                                 <th>Actions</th>
@@ -66,15 +97,20 @@ export default async function AdminTransactionsPage() {
                         </thead>
                         <tbody>
                             {pending.length === 0 ? (
-                                <tr><td colSpan={5}><div className="empty-state" style={{ padding: '2rem' }}><p>✅ No pending transactions</p></div></td></tr>
+                                <tr><td colSpan={6}><div className="empty-state" style={{ padding: '2rem' }}><p>✅ No pending transactions</p></div></td></tr>
                             ) : (
                                 pending.map(tx => (
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{tx.user.email}</span></td>
                                         <td>
-                                            <span className="mono">${tx.amount.toFixed(2)}</span><br />
+                                            <span className="mono" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>${tx.amount.toFixed(2)}</span><br />
                                             {typeBadge(tx.type, tx.note)}
                                             {tx.note && <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{tx.note}</div>}
+                                        </td>
+                                        <td>
+                                            <span className="mono" style={{ fontWeight: 700 }}>
+                                                ${getReceiveAmount(tx.amount, tx.type, tx.note).toFixed(2)}
+                                            </span>
                                         </td>
                                         <td><CopyAddress address={tx.toAddr} /></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleString()}</td>
@@ -101,22 +137,25 @@ export default async function AdminTransactionsPage() {
                                 <th>User</th>
                                 <th>Type</th>
                                 <th>Amount</th>
+                                <th>Receive Amount</th>
                                 <th>Address</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {txs.length === 0 ? (
-                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>No transactions</td></tr>
+                            {allTxs.length === 0 ? (
+                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>No transactions</td></tr>
                             ) : (
-                                txs.map(tx => (
+                                allTxs.map(tx => (
                                     <tr key={tx.id}>
                                         <td><span style={{ fontWeight: 600 }}>{tx.user.name}</span></td>
                                         <td>{typeBadge(tx.type, tx.note)}</td>
-                                        <td className="mono">
+                                        <td className="mono" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
                                             ${tx.amount.toFixed(2)}
-                                            {tx.note && <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{tx.note}</div>}
+                                        </td>
+                                        <td className="mono" style={{ fontWeight: 700 }}>
+                                            ${getReceiveAmount(tx.amount, tx.type, tx.note).toFixed(2)}
                                         </td>
                                         <td><CopyAddress address={tx.toAddr} /></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleDateString()}</td>
@@ -127,6 +166,7 @@ export default async function AdminTransactionsPage() {
                         </tbody>
                     </table>
                 </div>
+                <Pagination currentPage={currentPage} totalPages={totalPages} />
             </div>
         </div>
     )

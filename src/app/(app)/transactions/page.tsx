@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import Pagination from '@/components/Pagination'
 
 function typeBadge(type: string, note?: string | null) {
     if (type === 'deposit') return <span className="badge badge-deposit">Deposit</span>
@@ -28,14 +29,36 @@ function shortAddr(addr: string) {
     return addr.slice(0, 6) + '…' + addr.slice(-4)
 }
 
-export default async function TransactionsPage() {
+function getReceiveAmount(amount: number, type: string, note?: string | null) {
+    if (type === 'withdraw' && note && note.includes('Net: $')) {
+        const parts = note.split('Net: $')
+        if (parts.length > 1) {
+            return parseFloat(parts[1])
+        }
+    }
+    return amount
+}
+
+export default async function TransactionsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+    const params = await searchParams
+    const currentPage = Number(params.page) || 1
+    const limit = 10
+    const skip = (currentPage - 1) * limit
+
     const session = await getSession()
     if (!session) redirect('/')
 
-    const txs = await prisma.transaction.findMany({
-        where: { userId: session.id },
-        orderBy: { date: 'desc' },
-    })
+    const [txs, totalItems] = await Promise.all([
+        prisma.transaction.findMany({
+            where: { userId: session.id },
+            orderBy: { date: 'desc' },
+            skip,
+            take: limit
+        }),
+        prisma.transaction.count({ where: { userId: session.id } })
+    ])
+
+    const totalPages = Math.ceil(totalItems / limit)
 
     return (
         <div className="page active" style={{ display: 'block' }}>
@@ -52,18 +75,22 @@ export default async function TransactionsPage() {
                             <tr>
                                 <th>Type</th>
                                 <th>Amount</th>
+                                <th>Receive Amount</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {txs.length === 0 ? (
-                                <tr><td colSpan={4}><div className="empty-state"><p>No transactions yet.</p></div></td></tr>
+                                <tr><td colSpan={5}><div className="empty-state"><p>No transactions yet.</p></div></td></tr>
                             ) : (
                                 txs.map(tx => (
                                     <tr key={tx.id}>
                                         <td>{typeBadge(tx.type, tx.note)}</td>
-                                        <td className="mono">${tx.amount.toFixed(2)}</td>
+                                        <td className="mono" style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>${tx.amount.toFixed(2)}</td>
+                                        <td className="mono" style={{ fontWeight: 700, color: 'var(--text)' }}>
+                                            ${getReceiveAmount(tx.amount, tx.type, tx.note).toFixed(2)}
+                                        </td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                                         <td>{statusBadge(tx.status)}</td>
                                     </tr>
@@ -72,6 +99,7 @@ export default async function TransactionsPage() {
                         </tbody>
                     </table>
                 </div>
+                <Pagination currentPage={currentPage} totalPages={totalPages} />
             </div>
         </div>
     )

@@ -10,26 +10,47 @@ function statusBadge(status: string) {
     return <span className="badge">{status}</span>
 }
 
+function getReceiveAmount(amount: number, type: string, note?: string | null) {
+    if (type === 'withdraw' && note && note.includes('Net: $')) {
+        const parts = note.split('Net: $')
+        if (parts.length > 1) {
+            return parseFloat(parts[1])
+        }
+    }
+    return amount
+}
+
 export default async function DashboardPage() {
     const session = await getSession()
     if (!session) redirect('/')
 
-    const user = await prisma.user.findUnique({
-        where: { id: session.id },
-        include: {
-            transactions: {
-                orderBy: { date: 'desc' },
+    const [user, allTxStats] = await Promise.all([
+        prisma.user.findUnique({
+            where: { id: session.id },
+            include: {
+                transactions: {
+                    orderBy: { date: 'desc' },
+                    take: 50 // Limit local fetching for history list but calculate stats separately
+                },
+                _count: {
+                    select: { referrals: true }
+                }
             }
-        }
-    })
+        }),
+        prisma.transaction.findMany({
+            where: { userId: session.id, status: 'approved' },
+            select: { type: true, amount: true, note: true }
+        })
+    ])
+
     if (!user) redirect('/')
 
     const txs = user.transactions
-    const deps = txs.filter((t: any) => t.type === 'deposit' && t.status === 'approved').reduce((s: number, t: any) => s + t.amount, 0)
-    const wits = txs.filter((t: any) => t.type === 'withdraw' && t.status === 'approved').reduce((s: number, t: any) => s + t.amount, 0)
+    const deps = allTxStats.filter((t: any) => t.type === 'deposit').reduce((s: number, t: any) => s + t.amount, 0)
+    const wits = allTxStats.filter((t: any) => t.type === 'withdraw').reduce((s: number, t: any) => s + t.amount, 0)
 
     // Calculate Total Profit/Loss from admin updates
-    const adminUpdates = txs.filter(t => t.type === 'admin_update' && t.status === 'approved')
+    const adminUpdates = allTxStats.filter(t => t.type === 'admin_update')
     let totalProfit = 0
     let totalLoss = 0
 
@@ -44,8 +65,12 @@ export default async function DashboardPage() {
     })
 
     const netProfit = totalProfit - totalLoss
+    const pend = await prisma.transaction.count({
+        where: { userId: session.id, status: 'pending' }
+    })
 
-    const pend = txs.filter(t => t.status === 'pending').length
+    // Milestone Check for Fee Display
+    const hasDoubled = deps > 0 && (user.balance + wits - deps) >= deps
 
     return (
         <div className="page active" style={{ display: 'block' }}>
@@ -63,7 +88,7 @@ export default async function DashboardPage() {
                     <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
                     Live balance — last updated just now
                 </div>
-                <DashboardActions balance={user.balance} />
+                <DashboardActions balance={user.balance} hasDoubled={hasDoubled} />
             </div>
 
             <div className="two-col">
@@ -110,7 +135,12 @@ export default async function DashboardPage() {
                                         <div className={`history-amt ${tx.type === 'withdraw' || (tx.type === 'admin_update' && tx.note?.toLowerCase().includes('loss')) ? 'neg' : 'pos'}`}>
                                             {tx.type === 'withdraw' || (tx.type === 'admin_update' && tx.note?.toLowerCase().includes('loss')) ? '-' : '+'}${tx.amount.toFixed(2)}
                                         </div>
-                                        <div className="history-status" style={{ textAlign: 'right' }}>
+                                        {tx.type === 'withdraw' && (
+                                            <div style={{ fontSize: '0.7rem', color: 'var(--text)', fontWeight: 600, textAlign: 'right', marginTop: '2px' }}>
+                                                Recv: ${getReceiveAmount(tx.amount, tx.type, tx.note).toFixed(2)}
+                                            </div>
+                                        )}
+                                        <div className="history-status" style={{ textAlign: 'right', marginTop: '4px' }}>
                                             {statusBadge(tx.status)}
                                         </div>
                                     </div>
@@ -154,6 +184,12 @@ export default async function DashboardPage() {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                                     <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--accent)' }}>{user.id}</span>
                                     <CopyButton text={user.id} />
+                                </div>
+                                <div style={{ marginTop: '0.75rem' }}>
+                                    <div className="stat-label" style={{ fontSize: '0.65rem' }}>Total Referrals</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.1rem' }}>
+                                        {user._count.referrals} users
+                                    </div>
                                 </div>
                                 {user.referredById && (
                                     <div style={{ marginTop: '0.75rem' }}>

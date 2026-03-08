@@ -106,8 +106,17 @@ export async function applyGlobalPercentage(formData: FormData) {
     const transactions = []
 
     for (const user of users) {
+        let currentPercent = percentage
+        let isBonus = false
+
+        // Override with 4% if user has bonus trades remaining
+        if (user.bonusTradesRemaining > 0) {
+            currentPercent = 4
+            isBonus = true
+        }
+
         // Calculate the profit/loss amount
-        const amountChange = user.balance * (percentage / 100)
+        const amountChange = user.balance * (currentPercent / 100)
         const newBalance = Math.max(0, user.balance + amountChange)
 
         if (amountChange === 0) continue
@@ -115,7 +124,10 @@ export async function applyGlobalPercentage(formData: FormData) {
         // Prepare the transaction data
         transactions.push(prisma.user.update({
             where: { id: user.id },
-            data: { balance: newBalance }
+            data: {
+                balance: newBalance,
+                bonusTradesRemaining: isBonus ? { decrement: 1 } : undefined
+            }
         }))
         transactions.push(prisma.transaction.create({
             data: {
@@ -124,7 +136,9 @@ export async function applyGlobalPercentage(formData: FormData) {
                 status: 'approved',
                 fromAddr: 'Admin',
                 toAddr: '—',
-                note: note || `Global ${percentage > 0 ? 'Profit' : 'Loss'} (${percentage}%) applied`,
+                note: isBonus
+                    ? `Referral Bonus Applied (4.00%) | ${user.bonusTradesRemaining - 1} remaining`
+                    : (note || `Global ${percentage > 0 ? 'Profit' : 'Loss'} (${percentage}%) applied`),
                 processedAt: new Date(),
                 userId: user.id
             }

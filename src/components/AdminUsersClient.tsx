@@ -6,7 +6,7 @@ import { UpdateBalanceModal, GlobalPercentageModal, CopyAddress } from '@/compon
 export default function UsersTableClientWrapper({
     users
 }: {
-    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number; lastAddr: string; referrer: string }>
+    users: Array<{ id: string; name: string; email: string; balance: number; txCount: number; refCount: number; lastAddr: string; referrer: string; createdAt: string }>
 }) {
     const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string; balance: number } | null>(null)
     const [isGlobalModalOpen, setGlobalModalOpen] = useState(false)
@@ -25,11 +25,12 @@ export default function UsersTableClientWrapper({
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Account ID</th>
-                                <th>Referrer</th>
+                                <th>Account ID / Referrer</th>
+                                <th>Joined</th>
                                 <th>Balance</th>
                                 <th>Wallet Address</th>
                                 <th>Txs</th>
+                                <th>Refs</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -40,11 +41,17 @@ export default function UsersTableClientWrapper({
                                 users.map(u => (
                                     <tr key={u.id}>
                                         <td><span style={{ fontWeight: 700 }}>{u.name}</span><br /><span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{u.email}</span></td>
-                                        <td><CopyAddress address={u.id} /></td>
-                                        <td style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{u.referrer}</td>
+                                        <td>
+                                            <div style={{ fontSize: '0.75rem', fontWeight: 600 }}>ID: <CopyAddress address={u.id} /></div>
+                                            <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '4px' }}>Ref: {u.referrer}</div>
+                                        </td>
+                                        <td style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                                            {new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </td>
                                         <td><span className="mono" style={{ color: 'var(--accent3)', fontWeight: 600 }}>${u.balance.toFixed(2)}</span></td>
                                         <td><span className="mono" style={{ fontSize: '0.7rem', color: 'var(--muted)', wordBreak: 'break-all' }}>{u.lastAddr}</span></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{u.txCount}</td>
+                                        <td style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>{u.refCount}</td>
                                         <td>
                                             <button
                                                 className="btn btn-secondary btn-sm"

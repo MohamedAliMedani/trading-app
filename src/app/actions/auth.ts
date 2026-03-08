@@ -69,9 +69,18 @@ export async function register(formData: FormData) {
             name,
             email,
             passwordHash: hash,
+            bonusTradesRemaining: refId ? 2 : 0,
             referredBy: refId ? { connect: { id: refId } } : undefined
         }
     })
+
+    // Grant bonus trades to referrer as well
+    if (refId) {
+        await prisma.user.update({
+            where: { id: refId },
+            data: { bonusTradesRemaining: { increment: 2 } }
+        })
+    }
 
     await createSession({ id: user.id, email: user.email, role: user.role })
     return { success: true, redirect: '/dashboard' }

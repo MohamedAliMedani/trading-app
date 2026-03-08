@@ -76,7 +76,7 @@ export function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
     )
 }
 
-export function WithdrawModal({ isOpen, onClose, balance }: { isOpen: boolean; onClose: () => void; balance: number }) {
+export function WithdrawModal({ isOpen, onClose, balance, hasDoubled }: { isOpen: boolean; onClose: () => void; balance: number; hasDoubled: boolean }) {
     const { showToast } = useToast()
     const [loading, setLoading] = useState(false)
     const [amount, setAmount] = useState<string>('')
@@ -104,6 +104,20 @@ export function WithdrawModal({ isOpen, onClose, balance }: { isOpen: boolean; o
                 <div className="modal-title">🏧 Withdraw Funds</div>
                 <div className="modal-sub">Enter your wallet address and amount to withdraw</div>
 
+                {!hasDoubled && (
+                    <div className="info-box warn" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <div>
+                                <strong style={{ fontSize: '0.85rem' }}>High Withdrawal Fee (25%)</strong>
+                                <p style={{ fontSize: '0.75rem', margin: '0.15rem 0 0', lineHeight: 1.4 }}>
+                                    Your account has not yet doubled its investment. To lower the fee to <strong>2%</strong>, your total profit must equal your total deposit.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Your Receiving Address <span style={{ color: 'var(--accent)', fontSize: '0.75rem' }}>(USDT BEP20 Only)</span></label>
@@ -127,17 +141,17 @@ export function WithdrawModal({ isOpen, onClose, balance }: { isOpen: boolean; o
                             <strong>${balance.toFixed(2)}</strong>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                            <span style={{ color: 'var(--muted)' }}>Withdrawal Fee (2%):</span>
-                            <strong style={{ color: 'var(--accent)' }}>-${(Number(amount) * 0.02).toFixed(2)}</strong>
+                            <span style={{ color: 'var(--muted)' }}>Withdrawal Fee ({hasDoubled ? '2%' : '25%'}):</span>
+                            <strong style={{ color: hasDoubled ? 'var(--accent)' : '#ef4444' }}>-${(Number(amount) * (hasDoubled ? 0.02 : 0.25)).toFixed(2)}</strong>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border)', paddingTop: '0.25rem', marginTop: '0.25rem' }}>
                             <span><strong>You will receive:</strong></span>
-                            <strong style={{ color: 'var(--success, #22c55e)' }}>${(Number(amount) * 0.98).toFixed(2)}</strong>
+                            <strong style={{ color: 'var(--success, #22c55e)' }}>${(Number(amount) * (hasDoubled ? 0.98 : 0.75)).toFixed(2)}</strong>
                         </div>
                     </div>
 
                     <div className="info-box" style={{ marginTop: '1rem', fontSize: '0.75rem' }}>
-                        Withdrawals are processed after admin approval, typically within <strong>24–48 hours</strong>.
+                        Withdrawals are processed after admin approval, typically within <strong>6 hours during day</strong>.
                     </div>
 
                     <button disabled={loading} className="btn btn-primary" style={{ marginTop: '1rem' }}>
