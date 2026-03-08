@@ -52,20 +52,18 @@ export default async function TransactionsPage() {
                             <tr>
                                 <th>Type</th>
                                 <th>Amount</th>
-                                <th>Address</th>
                                 <th>Date</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             {txs.length === 0 ? (
-                                <tr><td colSpan={5}><div className="empty-state"><p>No transactions yet.</p></div></td></tr>
+                                <tr><td colSpan={4}><div className="empty-state"><p>No transactions yet.</p></div></td></tr>
                             ) : (
                                 txs.map(tx => (
                                     <tr key={tx.id}>
                                         <td>{typeBadge(tx.type, tx.note)}</td>
                                         <td className="mono">${tx.amount.toFixed(2)}</td>
-                                        <td><span className="addr-short">{shortAddr(tx.type === 'withdraw' ? tx.toAddr : tx.fromAddr)}</span></td>
                                         <td style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{new Date(tx.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                                         <td>{statusBadge(tx.status)}</td>
                                     </tr>
