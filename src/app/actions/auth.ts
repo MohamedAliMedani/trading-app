@@ -69,7 +69,7 @@ export async function register(formData: FormData) {
             name,
             email,
             passwordHash: hash,
-            bonusTradesRemaining: refId ? 2 : 0,
+            bonusTradesRemaining: 0,
             referredBy: refId ? { connect: { id: refId } } : undefined
         }
     })

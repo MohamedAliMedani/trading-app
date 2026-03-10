@@ -54,7 +54,7 @@ export default async function AdminReferralsPage({ searchParams }: { searchParam
             </div>
 
             <div className="info-box" style={{ background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: 'var(--accent2)', marginBottom: '1.5rem' }}>
-                💡 <strong>Referral Policy:</strong> When a new user joins via referral, both the <strong>New User</strong> and the <strong>Referrer</strong> automatically receive <strong>2 bonus trades</strong> at a fixed <strong>4% profit</strong> rate, overriding the global rate.
+                💡 <strong>Referral Policy:</strong> When a new user joins via referral, the <strong>Referrer</strong> automatically receives <strong>2 bonus trades</strong> at a fixed <strong>4% profit</strong> rate, overriding the global rate.
             </div>
 
             <AdminReferralsClient

@@ -177,6 +177,46 @@ export default async function DashboardPage() {
                             <div className="stat-value warn" style={{ fontSize: '1.3rem' }}>{pend}</div>
                         </div>
 
+                        {/* Withdrawal Cycle Progress Card */}
+                        <div className="card" style={{ marginTop: '0.5rem', background: 'var(--surface1)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                            <div className="card-header" style={{ padding: '1rem', paddingBottom: '0.5rem' }}>
+                                <div>
+                                    <div className="card-title" style={{ fontSize: '0.9rem' }}>Withdrawal Fee Status</div>
+                                    <div className="card-subtitle" style={{ fontSize: '0.7rem' }}>Cycle-based fee milestone</div>
+                                </div>
+                                <span className={`badge ${hasDoubled ? 'badge-approved' : 'badge-pending'}`} style={{ fontSize: '0.65rem' }}>
+                                    {hasDoubled ? '2% Fee Active' : '25% Standard Fee'}
+                                </span>
+                            </div>
+
+                            <div style={{ padding: '1rem', paddingTop: '0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.75rem' }}>
+                                    <span style={{ color: 'var(--muted)' }}>Double Investment Progress</span>
+                                    <span style={{ fontWeight: 700, color: hasDoubled ? 'var(--success)' : 'var(--accent)' }}>
+                                        {Math.min(100, Math.max(0, (deps > 0 ? ((user.balance + wits - deps) / deps) * 100 : 0))).toFixed(0)}%
+                                    </span>
+                                </div>
+
+                                <div style={{ height: '6px', width: '100%', background: 'var(--bg)', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                                    <div style={{
+                                        height: '100%',
+                                        width: `${Math.min(100, Math.max(0, (deps > 0 ? ((user.balance + wits - deps) / deps) * 100 : 0)))}%`,
+                                        background: hasDoubled ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, var(--accent), var(--accent2))',
+                                        boxShadow: '0 0 10px rgba(0,229,255,0.2)',
+                                        transition: 'width 1s ease-in-out'
+                                    }}></div>
+                                </div>
+
+                                <div style={{ marginTop: '0.8rem', fontSize: '0.7rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+                                    {hasDoubled ? (
+                                        <p>✅ <strong>Milestone Reached!</strong> You've doubled your total investment. Your fee is locked at <strong>2%</strong>. Note: New deposits will start a new cycle.</p>
+                                    ) : (
+                                        <p>🚀 Profit <strong>${deps.toFixed(2)}</strong> more to reach the 2x milestone and lower your withdrawal fee to <strong>2%</strong>.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="card" style={{ marginTop: '0.5rem', background: 'var(--bg)', border: '1px dashed var(--border)' }}>
                             <div className="card-title" style={{ fontSize: '0.85rem' }}>Account Profile</div>
                             <div style={{ marginTop: '1rem' }}>

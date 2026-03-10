@@ -165,6 +165,40 @@ export default async function ProfilePage() {
                                 </span>
                             </div>
                         </div>
+
+                        <div className="card" style={{ marginTop: '1rem', background: 'var(--surface1)', border: '1px solid var(--border)', padding: '1.25rem' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <div className="card-title" style={{ fontSize: '0.85rem' }}>Investment Milestone</div>
+                                <span className="badge" style={{ background: (user.balance + wits - deps) >= deps ? 'rgba(16,185,129,0.1)' : 'var(--surface2)', color: (user.balance + wits - deps) >= deps ? 'var(--accent3)' : 'var(--muted)', fontSize: '0.6rem' }}>
+                                    {(user.balance + wits - deps) >= deps ? '2% Fee Active' : '25% Fee Active'}
+                                </span>
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontSize: '0.75rem' }}>
+                                <span style={{ color: 'var(--muted)' }}>Doubling Progress</span>
+                                <span style={{ fontWeight: 700, color: (user.balance + wits - deps) >= deps ? 'var(--success)' : 'var(--accent)' }}>
+                                    {deps > 0 ? Math.min(100, Math.max(0, ((user.balance + wits - deps) / deps) * 100)).toFixed(1) : '0'}%
+                                </span>
+                            </div>
+
+                            <div style={{ height: '8px', width: '100%', background: 'var(--bg)', borderRadius: '10px', overflow: 'hidden', border: '1px solid var(--border)', marginBottom: '1rem' }}>
+                                <div style={{
+                                    height: '100%',
+                                    width: `${deps > 0 ? Math.min(100, Math.max(0, ((user.balance + wits - deps) / deps) * 100)) : 0}%`,
+                                    background: (user.balance + wits - deps) >= deps ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, var(--accent), var(--accent2))',
+                                    boxShadow: '0 0 15px rgba(0,229,255,0.2)',
+                                    transition: 'width 1s ease-in-out'
+                                }}></div>
+                            </div>
+
+                            <div style={{ fontSize: '0.7rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                                {(user.balance + wits - deps) >= deps ? (
+                                    <p>🎉 <strong>Congratulations!</strong> You have successfully doubled your initial investment cycle. Your withdrawal fee is currently <strong>2%</strong>.</p>
+                                ) : (
+                                    <p>🛡️ To unlock the <strong>2% withdrawal fee</strong>, your total platform earnings (Balance + Withdrawn) must reach <strong>${(deps * 2).toFixed(2)}</strong> (double your total deposits).</p>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
