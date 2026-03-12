@@ -31,11 +31,11 @@ export default async function ProfilePage() {
     const wits = allTxStats.filter((t: any) => t.type === 'withdraw').reduce((s: number, t: any) => s + t.amount, 0)
 
     // Calculate Total Profit/Loss from admin updates
-    const adminUpdates = allTxStats.filter(t => t.type === 'admin_update')
+    const adminUpdates = allTxStats.filter((t: any) => t.type === 'admin_update')
     let totalProfit = 0
     let totalLoss = 0
 
-    adminUpdates.forEach(t => {
+    adminUpdates.forEach((t: any) => {
         const isLoss = t.note?.toLowerCase().includes('loss') || t.note?.toLowerCase().includes('deduction')
         if (isLoss) {
             totalLoss += t.amount
