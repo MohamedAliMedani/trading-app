@@ -39,11 +39,11 @@ export function DepositModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                 <div className="form-group">
                     <label>Platform Wallet Address</label>
                     <div className="wallet-box" onClick={() => {
-                        navigator.clipboard.writeText('0xA1B2C3D4E5F6a1b2c3d4e5f6A1B2C3D4E5F6a1b2')
+                        navigator.clipboard.writeText('0x6889c906e30cab91a4ffe83561e538f4e061d97e')
                         showToast('Wallet address copied!', 'success')
                     }}>
                         <span className="copy-hint" style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>Tap to Copy</span>
-                        <span>0xA1B2C3D4E5F6a1b2c3d4e5f6A1B2C3D4E5F6a1b2</span>
+                        <span>0x6889c906e30cab91a4ffe83561e538f4e061d97e</span>
                     </div>
                 </div>
 
