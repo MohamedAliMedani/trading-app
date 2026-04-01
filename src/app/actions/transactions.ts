@@ -15,7 +15,7 @@ export async function requestDeposit(formData: FormData) {
     if (!fromAddr) return { error: 'Invalid sending address' }
 
     // Platform wallet is hardcoded
-    const toAddr = '0x287F999Ccd81589D1680ade934f9E6A4f881b0a2'
+    const toAddr = '0x6889c906e30cab91a4ffe83561e538f4e061d97e'
 
     await prisma.transaction.create({
         data: {
